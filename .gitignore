@@ -1,2 +1,6 @@
-songs
+song*
 .python-version
+*.npy
+*.txt
+a.out*
+

@@ -80,15 +80,25 @@ def get_w(w: int, N: int, n: int, p: int) -> int:
     """ Returns w, the principal nth root of unity for n. """
     return mod_exp(w, 1 << (N - n + 1), p)
 
+def rev_increment(c: int, m: int) -> int:
+    """ Increments a reverse binary counter. """
+    i = 1 << (m - 1)
+    while c & i > 0:
+        c ^= i
+        i >>= 1
+    return c ^ i
+
 def bit_rev_copy(a: list) -> list:
     """ Constructs an initial order from a by reversing the bits of the index. """
     n, m = len(a), len(a).bit_length() - 1
     A = [0]*n
+    c = 0
     for i in range(n):
-        A[int(bin(i)[:1:-1].ljust(m, "0"), 2)] = a[i]
+        A[c] = a[i]
+        c = rev_increment(c, m)
     return A
 
-def int_fft(a: list, wn: int, p: int, inv: bool=False) -> list:
+def int_fft(a: list, wn: int, p: int) -> list:
     """ Computes the DFT iteratively with modulo instead of complex numbers. """
     n, lgn = len(a), len(a).bit_length()
     A = bit_rev_copy(a)
@@ -126,8 +136,12 @@ def poly_mult(a: list, b: list, w: int, p: int) -> list:
     bp = mirror(b + [0]*(n - len(b)) + [0]*n)
     w = get_w(w, N, len(ap).bit_length(), p)
     ap, bp = int_fft(ap, w, p), int_fft(bp, w, p)
-    return inv_int_fft([ap[i]*bp[i] for i in range(len(ap))], w, p)
+    return inv_int_fft([ap[i]*bp[i] % p for i in range(len(ap))], w, p)
 
-N = 40
-w, p = find_wp(1 << N)
+# N = 51
+N = 30
+# w, p = find_wp(1 << N)
+# w, p = 4782969, 31525197391593473
+w, p = 125, 3221225473
+
 fft = lambda a, b: poly_mult(a, b, w, p)

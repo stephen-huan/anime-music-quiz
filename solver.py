@@ -99,8 +99,25 @@ and map that offset to a particular song (theoretically faster)
 (min/max/average? - determine quality by listening to the "compressed" songs)
 """
 from fft import fft
+import subprocess
 
-def min_offset(a: list, b: list) -> int:
+def load_arrays(fname: str) -> tuple:
+    """ Gets arrays from a file. """
+    with open(fname) as f:
+        f.readline()
+        l1 = list(map(int, f.readline().split()))
+        f.readline()
+        return l1, list(map(int, f.readline().split()))
+
+def save_arrays(fname: str, l1: list, l2: list) -> None:
+    """ Dumps arrays to a file. """
+    with open(fname, "w") as f:
+        f.write(str(len(l1)) + "\n")
+        f.write(" ".join(map(str, l1)) + "\n")
+        f.write(str(len(l2)) + "\n")
+        f.write(" ".join(map(str, l2)) + "\n")
+
+def min_offset(a: list, b: list) -> tuple:
     """ Computes the offset that minimizes the pointwise L2 norm between the two lists. """
     N, M = len(a), len(b)
     p = fft(a[::-1], b)[N - 1:]
@@ -112,4 +129,16 @@ def min_offset(a: list, b: list) -> int:
         d = -2*xy + y2
         if d < l2:
             best, l2 = i, d
-    return best
+    return best, x2 + l2
+
+def solve(a: list, b: list) -> tuple:
+    """ Does the same thing as min_offset, but with the cpp executable instead. """
+    save_arrays("song.in", a, b)
+    subprocess.call(["./a.out"])
+    with open("song.out") as f:
+        return tuple(map(int, f.readline().split()))
+
+if __name__ == "__main__":
+    a, b = load_arrays("song.in")
+    # print(min_offset(a, b))
+    print(solve(a, b))
