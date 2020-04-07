@@ -5,19 +5,23 @@ NOTE: on macOS, most applications are BANNED from recording, including Python
 Here's what I did: get audacity, use the open command to launch it in terminal
 that allows you to add terminal to the list of apps allowed to access the microphone
 """
-import subprocess
+import subprocess, os, time
 import sounddevice as sd
-import numpy as np
+from pydub import AudioSegment
+from pydub.utils import mediainfo
 from scipy.io.wavfile import write
 from audio2numpy import open_audio
+import numpy as np
 
-# FS = int(48*1000)   # 48 kHz sampling rate
-FS = int(8*1000)      # post-processed after ffmpeg down scaling
 IN = 2                # should be soundflower 2ch on macOS
+ORIG = int(48*1000)   # default 48 kHz sampling rate
+ORATE = "48k"         # original rate, passed to ffmpeg
+FS = int(8*1000)      # post-processed after ffmpeg down scaling
+RATE = "8k"           # new rate, passed to ffmpeg
 BUCKET = 1 << 5       # must be a divisor of FS, factor of size reduction
 # assert FS % BUCKET == 0
-RATE = "8k"           # new rate, passed to ffmpeg
 BITS = 1 << 8         # number of bits per number (usually 16 for mp3)
+TEMP = "temp.mp3"     # temporary file path
 
 def save_file(fname: str, data: np.array):
     """ Saves a numpy array to a file. """
@@ -25,21 +29,44 @@ def save_file(fname: str, data: np.array):
 
 def load_file(fname: str) -> np.array:
     """ Loads a numpy array from a file. """
-    return np.load(fname + ".npy")
+    return np.load(fname)
 
 def load_mp3(fname: str) -> np.array:
     """ Loads a mp3 file as a numpy array. """
     data, sampling_rate = open_audio(fname)
-    # assert sampling_rate == FS
+    assert sampling_rate == FS or sampling_rate == ORIG
     return data
 
 def save_mp3(fname: str, data: np.array, rate: int=FS) -> None:
     """ Saves data into the WAV format. """
     write(fname, rate, data)
 
-def set_samplerate(data: np.array, original: int=FS, rate: int=48000):
+def samplerate(fname: str, out: str=TEMP, rate: str=RATE) -> None:
+    """ Uses ffmpeg to set the sample rate of a file. """
+    subprocess.call(["ffmpeg", "-loglevel", "quiet", "-y", "-i", fname, "-ar", rate, out])
+
+def get_samplerate(fname: str) -> int:
+    """ Returns the sample rate of a file. """
+    return int(mediainfo(fname)["sample_rate"])
+
+def set_samplerate(fname: str, rate: str=RATE) -> np.array:
     """ Converts an array recorded in one sample rate to one in another. """
-    # subprocess.call(["ffmpeg", "-y", "-i", "songs/bakemonogatari_ed1.mp3", "-ar", "8k", "song.mp3"])
+    samplerate(fname, TEMP, rate)
+    data = load_mp3(TEMP)
+    os.remove(TEMP)
+    return data
+
+def set_volume(data: np.array, vol: int) -> np.array:
+    """ Changes the volume of a song.
+    TODO: make it not stupid. """
+    save_mp3("temp.wav", data)
+    song = AudioSegment.from_wav("temp.wav")
+    os.remove("temp.wav")
+    song += vol
+    song.export(TEMP)
+    data = load_mp3(TEMP)
+    os.remove(TEMP)
+    return data
 
 def rge(data: np.array) -> float:
     """ Finds the range of the original data for volume scaling purposes. """
@@ -48,7 +75,7 @@ def rge(data: np.array) -> float:
 def avg_channels(data: np.array) -> np.array:
     """ Averages all the channels together into one mono channel. """
     # already has only one channel
-    if isinstance(data.shape, int):
+    if data.ndim == 1:
         return data
 
     chs = len(data[0])
@@ -77,7 +104,7 @@ def compress(data: np.array) -> np.array:
 
 def uncompress(data: np.array) -> np.array:
     """ Uncompresses the array by reversing compress.
-    DEPRECIATED: just set the sample rate in play_song.
+    DEPRECIATED: just set the sample rate in play.
     """
     l = []
     for num in data:
@@ -92,25 +119,19 @@ def preprocess(data: np.array) -> tuple:
 def snippet(data: np.array, length: int=10*FS) -> np.array:
     """ Returns a random snippet of the array for use in debugging. """
     i = np.random.randint(len(data) - length)
-    print(i/FS)
     return data[i: i + length]
 
-def play_song(data: np.array, rate: int=FS) -> None:
+def play(data: np.array, rate: int=FS) -> None:
     """ Plays a song to the default speaker. """
     sd.play(data, rate)
     sd.wait()
 
-def record(length: int) -> np.array:
+def record(length: int, rate: int=FS) -> np.array:
     """ Records a segment from the microphone (does not block). """
-    return sd.rec(int(length*FS), samplerate=FS, channels=1, device=IN)
+    return sd.rec(int(length*rate), samplerate=rate, channels=1, device=IN)
 
 if __name__ == "__main__":
-    data = load_mp3("songs/sampled_down/bakemonogatari_ed1.mp3")
-
-    snip = snippet(data)
-    # play_song(snip)
-    save_file("clip", snip)
-    exit()
+    data = set_samplerate("songs/bakemonogatari_ed1.mp3")
 
     data = avg_channels(data)
     # print(len(data))
@@ -120,14 +141,14 @@ if __name__ == "__main__":
     # data = uncompress(data)
 
     # save_mp3("test.wav", data)
-    # play_song(data)
-    exit()
+    # play(data)
+    # exit()
 
-    print("recording")
-    data = record(5)
-    sd.wait()
-    save_file("temp", data)
+    # print("recording")
+    # data = record(5)
+    # sd.wait()
+    # save_file("temp", data)
 
-    print(data)
-    data = load_file("temp")
-    play_song(data)
+    data = load_file("temp.npy")
+    print(data, len(data))
+    play(data)

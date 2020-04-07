@@ -10,6 +10,8 @@ sounddevice = "*"
 numpy = "*"
 audio2numpy = "*"
 scipy = "*"
+pydub = "*"
+selenium = "*"
 
 [requires]
 python_version = "3.8"

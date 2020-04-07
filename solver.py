@@ -93,9 +93,7 @@ O(|D| * M (log M) (log (V/epilon)))
 
 Optimizations:
 1. parallelize
-2. put all the songs into one mega song, calculate the offset,
-and map that offset to a particular song (theoretically faster)
-3. somehow reduce the size of the lists by combining into buckets
+2. somehow reduce the size of the lists by combining into buckets
 (min/max/average? - determine quality by listening to the "compressed" songs)
 """
 from fft import fft
@@ -137,6 +135,20 @@ def solve(a: list, b: list) -> tuple:
     subprocess.call(["./a.out"])
     with open("song.out") as f:
         return tuple(map(int, f.readline().split()))
+
+def loss_func(a, b):
+    return lambda v: solve((v*a).astype(int), b)[-1]
+
+def one_d_min(f, a, d, epsilon=10**-2):
+    while abs(a - d) > epsilon:
+        t = (d - a)/3
+        b = a + t
+        c = a + 2*t
+        if f(b) < f(c):
+            a, d = a, c
+        else:
+            a, d = b, d
+    return (a + d)/2
 
 if __name__ == "__main__":
     a, b = load_arrays("song.in")
