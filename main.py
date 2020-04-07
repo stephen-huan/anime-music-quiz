@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import audio, solver, db
 
@@ -16,9 +17,10 @@ def test_against(vol1: float, data: np.array, vol2: float, song: np.array) -> tu
 
 def find_song(vol1: float, data: np.array, verbose: bool=False) -> str:
     """ Finds the name of the anime a clip occurs from. """
+    start = time.time()
     songs = db.get_songs()
     pos, best, ans = 0, float("inf"), ""
-    for path, vol2, anime in songs:
+    for path, vol2, anime in sorted(songs):
         song = audio.load_file(path)
         p, l2 = test_against(vol1, data, vol2, song)
         if l2 < best:
@@ -28,6 +30,8 @@ def find_song(vol1: float, data: np.array, verbose: bool=False) -> str:
     if verbose:
         print("-"*10)
         print(f"Final answer: {ans}")
+        sec = round(time.time() - start, 2)
+        print(f"{len(songs)} songs in {sec} seconds = {round(len(songs)/sec, 2)} songs per second")
     return ans
 
 if __name__ == "__main__":

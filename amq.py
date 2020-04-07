@@ -1,4 +1,8 @@
-# serves as the API for the website
+"""
+serves as the API for the website
+Note that for selenium to work, if the window is not headless, it must be focused.
+"""
+
 import time, json, sys
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -9,6 +13,7 @@ URL = "https://animemusicquiz.com/"  # url of the website
 LOGIN = "login.json"                 # contains the username and password
 LEN = 10                             # seconds to record for
 VERBOSE = True                       # whether to be verbose or not
+HEADLESS, MUTED = True, False        # whether to run headless or muted
 
 with open(LOGIN) as f:
     login = json.load(f)
@@ -20,7 +25,13 @@ def find_by_text(driver: webdriver.Chrome, text: str):
 
 def login() -> webdriver.Chrome:
     """ Logs in and returns a webdriver object. """
-    driver = webdriver.Chrome()
+    chrome_options = webdriver.ChromeOptions()
+    if HEADLESS:
+        chrome_options.add_argument("--headless")
+    if MUTED:
+        chrome_options.add_argument("--mute-audio")
+    driver = webdriver.Chrome(options=chrome_options)
+
     driver.get(URL)
     driver.find_element_by_id("loginUsername").send_keys(USER)
     driver.find_element_by_id("loginPassword").send_keys(PASS)
@@ -28,10 +39,10 @@ def login() -> webdriver.Chrome:
     time.sleep(1)
 
     btn = driver.find_elements_by_id("alreadyOnlineContinueButton")
+    print(btn)
     if len(btn) > 0:
         btn[0].click()
 
-    time.sleep(5)
     return driver
 
 def enter_game(driver: webdriver.Chrome, room_name: str, room: int, password: str=None) -> None:
@@ -51,10 +62,44 @@ def enter_game(driver: webdriver.Chrome, room_name: str, room: int, password: st
     time.sleep(1)
     ready_up(driver)
 
+def block_recording(driver: webdriver.Chrome) -> None:
+    """ Blocks until it's time to start recording. """
+    while True:
+        try:
+            t = driver.find_element_by_id("qpHiderText")
+            txt = t.text.strip()
+            # if it's showing a high number, start recording
+            if txt in set(str(i) for i in range(15, 21)):
+                break
+            vote_skip(driver)
+            ready_up(driver)
+        except KeyboardInterrupt:
+            driver.quit()
+            exit()
+        except:
+            pass
+
 def ready_up(driver: webdriver.Chrome) -> None:
     """ Clicks the ready button. """
     try:
-        driver.find_element_by_id("lbStartButton").click()
+        btn = driver.find_element_by_id("lbStartButton")
+        if btn.text.strip() == "Ready" or btn.text.strip() == "Start":
+            btn.click()
+    except KeyboardInterrupt:
+        driver.quit()
+        exit()
+    except:
+        pass
+
+def vote_skip(driver: webdriver.Chrome) -> None:
+    """ Who has time to listen to the entire song? """
+    try:
+        btn = driver.find_element_by_id("qpVoteSkip")
+        if "toggled" not in btn.get_attribute("class").split():
+            btn.click()
+    except KeyboardInterrupt:
+        driver.quit()
+        exit()
     except:
         pass
 
@@ -69,14 +114,16 @@ if __name__ == "__main__":
     enter_game(driver, input("Room name? "), int(input("Room number? ")), input("Room password? "))
     while True:
         try:
-            input("hit enter to begin recording...\n")
+            block_recording(driver)
+            print("starting recording...")
             data = audio.record(LEN)
             audio.sd.wait() # block on the recording
             print("processing...")
             vol1, clip = audio.preprocess(data)
             ans = main.find_song(vol1, clip, VERBOSE)
+            if audio.np.max(clip) == 128: # 0 is at 128 because of the scaling
+                print("Clip is silent. Are you sure loopback is working?")
             answer(driver, ans)
-            ready_up(driver)
         except KeyboardInterrupt:
             driver.quit()
             exit()

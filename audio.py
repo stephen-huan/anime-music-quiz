@@ -131,12 +131,12 @@ def record(length: int, rate: int=FS) -> np.array:
     return sd.rec(int(length*rate), samplerate=rate, channels=1, device=IN)
 
 if __name__ == "__main__":
-    data = set_samplerate("songs/bakemonogatari_ed1.mp3")
-
-    data = avg_channels(data)
-    # print(len(data))
-    data = scale(data)
-    data = unscale(data)
+    # data = set_samplerate("songs/bakemonogatari_ed1.mp3")
+    #
+    # data = avg_channels(data)
+    # # print(len(data))
+    # data = scale(data)
+    # data = unscale(data)
     # data = compress(data)
     # data = uncompress(data)
 
@@ -144,10 +144,10 @@ if __name__ == "__main__":
     # play(data)
     # exit()
 
-    # print("recording")
-    # data = record(5)
-    # sd.wait()
-    # save_file("temp", data)
+    print("recording")
+    data = record(5)
+    sd.wait()
+    save_file("temp", data)
 
     data = load_file("temp.npy")
     print(data, len(data))
