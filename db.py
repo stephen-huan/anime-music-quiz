@@ -122,6 +122,8 @@ if __name__ == "__main__":
     clip.set_defaults(func=lambda args: gen_test_case(args.length, args.play))
     play = subparsers.add_parser("play", help="plays the test case")
     play.set_defaults(func=lambda args: audio.play(audio.load_file("clip.npy")))
+    size = subparsers.add_parser("size", help="prints the size of the database")
+    size.set_defaults(func=lambda args: print(f"{len(db)} songs in the database."))
 
     args = parser.parse_args()
     if "func" in args:

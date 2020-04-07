@@ -24,7 +24,7 @@ def find_song(vol1: float, data: np.array, verbose: bool=False) -> str:
         if l2 < best:
             pos, best, ans = p, l2, anime
         if verbose:
-            print(f"{db.get_name(path):<20}: {l2:<10} loss, occurs at {offset_time(p):<5} seconds in")
+            print(f"{db.get_name(path):<30}: {l2:<10} loss, occurs at {offset_time(p):<5} seconds in")
     if verbose:
         print("-"*10)
         print(f"Final answer: {ans}")
