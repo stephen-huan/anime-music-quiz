@@ -12,7 +12,7 @@ time aplay bakemonogatari_ed1.wav
 keeping the volume lower seems to make arecord more consistent -
 I suspect it can overflow on 100%, so I keep it at 85%.
 """
-import subprocess, os, time, sys
+import subprocess, os, time, sys, json
 import sounddevice as sd
 from pydub import AudioSegment
 from pydub.utils import mediainfo
@@ -20,7 +20,7 @@ from scipy.io.wavfile import read, write
 from audio2numpy import open_audio
 import numpy as np
 
-IN = 2                # should be soundflower 2ch on macOS
+IN = json.load(open("params.json"))["IN"] # should be soundflower 2ch on macOS
 ORIG = int(48*1000)   # default 48 kHz sampling rate
 ORATE = "48k"         # original rate, passed to ffmpeg
 FS = int(8*1000)      # post-processed after ffmpeg down scaling

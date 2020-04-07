@@ -3,5 +3,5 @@ song*
 *.npy
 *.txt
 a.out*
-login.json
+*.json
 webms
