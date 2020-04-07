@@ -1,6 +1,7 @@
 """
 serves as the API for the website
 Note that for selenium to work, if the window is not headless, it must be focused.
+TODO: host game, automatically load unseen songs into the database
 """
 
 import time, json, sys
@@ -39,7 +40,6 @@ def login() -> webdriver.Chrome:
     time.sleep(1)
 
     btn = driver.find_elements_by_id("alreadyOnlineContinueButton")
-    print(btn)
     if len(btn) > 0:
         btn[0].click()
 

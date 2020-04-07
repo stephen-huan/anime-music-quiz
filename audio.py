@@ -4,12 +4,19 @@ set the IN variable to a loopback device to record current system sound
 NOTE: on macOS, most applications are BANNED from recording, including Python
 Here's what I did: get audacity, use the open command to launch it in terminal
 that allows you to add terminal to the list of apps allowed to access the microphone
+
+on a Raspberry Pi:
+arecord --channels=2 --duration=10 --device=hw:0,1 --format=dat --vumeter=stereo temp.wav
+time aplay bakemonogatari_ed1.wav
+
+keeping the volume lower seems to make arecord more consistent -
+I suspect it can overflow on 100%, so I keep it at 85%.
 """
-import subprocess, os, time
+import subprocess, os, time, sys
 import sounddevice as sd
 from pydub import AudioSegment
 from pydub.utils import mediainfo
-from scipy.io.wavfile import write
+from scipy.io.wavfile import read, write
 from audio2numpy import open_audio
 import numpy as np
 
@@ -129,6 +136,16 @@ def play(data: np.array, rate: int=FS) -> None:
 def record(length: int, rate: int=FS) -> np.array:
     """ Records a segment from the microphone (does not block). """
     return sd.rec(int(length*rate), samplerate=rate, channels=1, device=IN)
+
+def rpi_record(length: int, rate: int=FS) -> np.array:
+    """ Records a segment from the microphone (blocks). """
+    subprocess.call(["arecord", "--channels=2", f"--duration={length}",
+    "--device=hw:0,1", "--format=dat", "--vumeter=stereo", "temp.wav"])
+    return set_samplerate("temp.wav")
+
+# if on linux, switch record method
+if sys.platform.startswith("linux"):
+    record = rpi_record
 
 if __name__ == "__main__":
     # data = set_samplerate("songs/bakemonogatari_ed1.mp3")
