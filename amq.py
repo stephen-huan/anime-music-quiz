@@ -121,6 +121,3 @@ if __name__ == "__main__":
             exit()
         except Exception as e:
             print(e)
-            ans = input("quit driver?\n")
-            if len(ans) > 0 and ans[0] == "y":
-                driver.quit()
