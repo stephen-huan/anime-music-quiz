@@ -12,6 +12,6 @@ audio2numpy = "*"
 scipy = "*"
 pydub = "*"
 selenium = "*"
-
-[requires]
-python_version = "3.8"
+pyaudio = "*"
+matplotlib = "*"
+mysql-connector-python = "*"

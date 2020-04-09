@@ -7,8 +7,7 @@ TODO: host game, automatically load unseen songs into the database
 import time, json, sys
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-import audio
-import main
+import fingerprint
 
 URL = "https://animemusicquiz.com/"  # url of the website
 LOGIN = "login.json"                 # contains the username and password
@@ -115,14 +114,7 @@ if __name__ == "__main__":
     while True:
         try:
             block_recording(driver)
-            print("starting recording...")
-            data = audio.record(LEN)
-            audio.sd.wait() # block on the recording
-            print("processing...")
-            vol1, clip = audio.preprocess(data)
-            ans = main.find_song(vol1, clip, VERBOSE)
-            if audio.np.max(clip) == 128: # 0 is at 128 because of the scaling
-                print("Clip is silent. Are you sure loopback is working?")
+            ans = fingerprint.find_song(LEN)
             answer(driver, ans)
         except KeyboardInterrupt:
             driver.quit()
