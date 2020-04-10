@@ -126,7 +126,9 @@ def get_score(driver: webdriver.Chrome) -> int:
         players = scoreboard.find_elements_by_class_name("qpScoreBoardEntry")
         for player in players:
             if USER in player.text:
-                return int(player.text.split()[0])
+                tokens = player.text.split()
+                # "battle royal" mode has first token life second token score
+                return int(tokens[0 if len(tokens) == 2 else 1])
         return 0
     except: return 0
 
