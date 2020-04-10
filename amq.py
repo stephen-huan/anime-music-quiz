@@ -13,7 +13,7 @@ URL = "https://animemusicquiz.com/"  # url of the website
 LOGIN = "login.json"                 # contains the username and password
 LEN = 5                              # seconds to record for
 VERBOSE = True                       # whether to be verbose or not
-HEADLESS, MUTED = True, False        # whether to run headless or muted
+HEADLESS, MUTED = True, True         # whether to run headless or muted
 LOG = "mistakes.txt"                 # information about anime it missed
 
 with open(LOGIN) as f:

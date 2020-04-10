@@ -43,7 +43,7 @@ def prompt_user() -> None:
 
 def update() -> None:
     """ Updates the database. """
-    djv.fingerprint_directory(PATH, [EXT], 1)
+    djv.fingerprint_directory(PATH, [EXT], 4)
     # print(djv.db.get_num_fingerprints())
     prompt_user()
 
