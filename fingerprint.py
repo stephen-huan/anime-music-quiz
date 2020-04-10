@@ -1,5 +1,5 @@
 # identifies songs with a fingerprint method
-import json, time, argparse, os
+import json, time, argparse, os, glob
 from dejavu import Dejavu
 from dejavu.logic.recognizer.file_recognizer import FileRecognizer
 from dejavu.logic.recognizer.microphone_recognizer import MicrophoneRecognizer
@@ -20,10 +20,22 @@ def save_db(data: dict) -> None:
     with open(INFO, "w") as f:
         json.dump(data, f)
 
+def get_paths() -> list:
+    """ Returns the paths to each song. """
+    return [path for path in glob.glob(f"{PATH}/*{EXT}")]
+
+def get_name(path: str) -> str:
+    """ Returns the name from a path. """
+    return path.split("/")[-1].split(".")[0]
+
 def prompt_user() -> None:
     """ Asks the user from which anime a mp3 file comes from. """
     db = load_db()
-    for name, info in db.items():
+    for path in get_paths():
+        name = get_name(path)
+        if name not in db:
+            db[name] = {"vol": None, "anime": None}
+        info = db[name]
         if info["anime"] is None:
             info["anime"] = input(f"From which anime does the file {name} come from? ")
 
@@ -32,8 +44,8 @@ def prompt_user() -> None:
 def update() -> None:
     """ Updates the database. """
     djv.fingerprint_directory(PATH, [EXT], 1)
-    prompt_user()
     # print(djv.db.get_num_fingerprints())
+    prompt_user()
 
 def _find_song(length: int=10, verbose: bool=True):
     """ Records a clip and finds where that clip comes from. """
