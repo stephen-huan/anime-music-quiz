@@ -1,3 +1,4 @@
 [submodule "dejavu-python"]
 	path = dejavu-python
-	url = https://github.com/stephen-huan/dejavu
+	url = https://github.com/stephen-huan/dejavu.git
+	branch = dejavu_python_3.6.6
