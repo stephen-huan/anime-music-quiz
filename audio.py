@@ -27,7 +27,7 @@ FS = int(8*1000)      # post-processed after ffmpeg down scaling
 RATE = "8k"           # new rate, passed to ffmpeg
 BUCKET = 1 << 5       # must be a divisor of FS, factor of size reduction
 # assert FS % BUCKET == 0
-BITS = 1 << 8         # number of bits per number (usually 16 for mp3)
+MU = (1 << 8) - 1     # number of bits per number (usually 16 for mp3)
 TEMP = "temp.mp3"     # temporary file path
 
 def save_file(fname: str, data: np.array):
@@ -93,12 +93,15 @@ def avg_channels(data: np.array) -> np.array:
 
 def scale(data: np.array) -> np.array:
     """ Turns a variance of [-1, 1], floating point
-    into [0, BITS], integer for mathematical reasons. """
-    return ((BITS >> 1)*(data + 1)).astype(int)
+    into [0, BITS), integer for mathematical reasons. 
+    See: https://en.wikipedia.org/wiki/%CE%9C-law_algorithm """
+    f = np.sign(data)*np.log(1 + MU*np.abs(data))/np.log(1 + MU) 
+    return ((MU >> 1)*(f + 1)).astype(int)
 
 def unscale(data: np.array) -> np.array:
     """ Reverses scale. """
-    return data/(BITS >> 1) - 1
+    data = data/(MU >> 1) - 1 
+    return np.sign(data)*(1/MU)*(np.power(1 + MU, np.abs(data)) - 1)
 
 def compress(data: np.array) -> np.array:
     """ Compresses the array down using a heuristical process.
@@ -149,7 +152,7 @@ if sys.platform.startswith("linux"):
 
 if __name__ == "__main__":
     # data = set_samplerate("songs/bakemonogatari_ed1.mp3")
-    #
+
     # data = avg_channels(data)
     # # print(len(data))
     # data = scale(data)
@@ -169,3 +172,4 @@ if __name__ == "__main__":
     data = load_file("temp.npy")
     print(data, len(data))
     play(data)
+
