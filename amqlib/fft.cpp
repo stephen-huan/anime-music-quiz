@@ -319,6 +319,35 @@ pi min_offset(li arg a, li arg b) {
   return mp(best, x2 + l2);
 }
 
+pi max_cosine(li arg a, li arg b) {
+  ll n, m, x2, xy, y2, best; double cosine, d;
+  n = len(a);
+  m = len(b);
+  li p = poly_mult(reverse(a), b, W, P);
+  x2 = 0;
+  For(x, a) {
+    x2 += x*x;
+  }
+  xy = p[n - 1];
+  y2 = 0;
+  range(i, n) {
+    y2 += b[i]*b[i];
+  }
+  best = 0;
+  cosine = 1.0*xy/y2;
+  range(i, 1, m - n + 1) {
+    y2 += b[n - 1 + i]*b[n - 1 + i] - b[i - 1]*b[i - 1];
+    xy = p[n - 1 + i];
+    d = 1.0*xy/y2;
+    if (d > cosine) {
+      best = i;
+      cosine = d;
+    }
+  }
+
+  return mp(best, 100000000000000000.0*(1 - cosine/x2));
+}
+
 int main(void) {
   ios::sync_with_stdio(false); cin.tie(NULL); // fast cin
   ifstream fin("song.in"); ofstream fout("song.out");
@@ -340,7 +369,7 @@ int main(void) {
     b.append(v);
   }
 
-  tie(pos, l2) = min_offset(a, b);
+  tie(pos, l2) = max_cosine(a, b);
   fout << pos << " " << l2 << el;
 
   return 0;

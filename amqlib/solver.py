@@ -81,23 +81,12 @@ https://ljk.imag.fr/membres/Anatoli.Iouditski/cours/convex/chapitre_22.pdf
 1D convex function optimization - runs in O(log(V/epsilon))
 where V is the maximum value of f and epsilon is the wanted precision
 V ~= 2^16, epsilon = 1
-----------
-mp3 data:
-44100 Hz, 16 bits per channel
-
-Algorithm:
-O(|D| * M (log M) (log (V/epilon)))
-= (100 songs)(44100 Hz * 90 seconds log (44100*90))(16)
-= sorta reasonable but also kinda questionable
-----------
-
-Optimizations:
-1. parallelize
-2. somehow reduce the size of the lists by combining into buckets
-(min/max/average? - determine quality by listening to the "compressed" songs)
 """
-from fft import fft
 import subprocess
+from amqlib import PATH
+from .fft import fft
+
+PATH = PATH[0]
 
 def load_arrays(fname: str) -> tuple:
     """ Gets arrays from a file. """
@@ -116,7 +105,7 @@ def save_arrays(fname: str, l1: list, l2: list) -> None:
         f.write(" ".join(map(str, l2)) + "\n")
 
 def min_offset(a: list, b: list) -> tuple:
-    """ Computes the offset that minimizes the pointwise L2 norm between the two lists. """
+    """ Computes the offset that minimizes the l2 norm. """
     N, M = len(a), len(b)
     p = fft(a[::-1], b)[N - 1:]
     x2, xy, y2 = sum(x*x for x in a), p[0], sum(b[i]*b[i] for i in range(N))
@@ -129,11 +118,25 @@ def min_offset(a: list, b: list) -> tuple:
             best, l2 = i, d
     return best, x2 + l2
 
+def max_cosine(a: list, b: list) -> tuple:
+    """ Computes the offset that maximizes the cosine similarity. """
+    N, M = len(a), len(b)
+    p = fft(a[::-1], b)[N - 1:]
+    x2, xy, y2 = sum(x*x for x in a), p[0], sum(b[i]*b[i] for i in range(N))
+    best, cos = 0, xy/y2
+    for i in range(1, M - N + 1):
+        y2 += b[N - 1 + i]*b[N - 1 + i] - b[i - 1]*b[i - 1]
+        xy = p[i]
+        d = xy/y2
+        if d > cos:
+            best, cos = i, d
+    return best, 1 - cos/x2 # loss means lower is better
+
 def solve(a: list, b: list) -> tuple:
-    """ Does the same thing as min_offset, but with the cpp executable instead. """
-    save_arrays("song.in", a, b)
-    subprocess.call(["./a.out"])
-    with open("song.out") as f:
+    """ Same thing as min_offset, but with a cpp executable. """
+    save_arrays(f"{PATH}/song.in", a, b)
+    subprocess.call(["./a.out"], cwd=PATH)
+    with open(f"{PATH}/song.out") as f:
         return tuple(map(int, f.readline().split()))
 
 def loss_func(a, b):
@@ -154,3 +157,4 @@ if __name__ == "__main__":
     a, b = load_arrays("song.in")
     # print(min_offset(a, b))
     print(solve(a, b))
+

@@ -1,7 +1,7 @@
 # maintains the song database
 import subprocess, glob, json, os, argparse, random
 import numpy as np
-import audio
+from amqlib import audio
 
 PATH = "songs"               # where the songs are stored
 DB = PATH + "/sampled_down"  # cached reduced songs
@@ -85,6 +85,7 @@ def random_song(verbose: bool=True) -> np.array:
     song = random.choice(get_paths())
     if verbose:
         print(f"Picking a clip from {get_name(song)} at {'+' if dB >= 0 else ''}{round(dB, 2)}dB")
+    return 1/3*audio.set_samplerate(song)
     return audio.set_volume(audio.set_samplerate(song), dB)
 
 def gen_test_case(length: int=10, play: bool=False) -> np.array:

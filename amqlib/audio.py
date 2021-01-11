@@ -1,9 +1,10 @@
 """
 set the IN variable to a loopback device to record current system sound
-(get the ids of each thing by print(sd.query_devices()) or python -m sounddevice
-NOTE: on macOS, most applications are BANNED from recording, including Python
-Here's what I did: get audacity, use the open command to launch it in terminal
-that allows you to add terminal to the list of apps allowed to access the microphone
+(get the ids by print(sd.query_devices()) or python -m sounddevice
+NOTE: on macOS, most applications are BANNED from recording, including Python.
+Here's what I did: get audacity, use the open command to launch it in terminal.
+That allows you to add terminal to the list
+of apps allowed to access the microphone.
 
 on a Raspberry Pi:
 arecord --channels=2 --duration=10 --device=hw:0,1 --format=dat --vumeter=stereo temp.wav
@@ -92,15 +93,15 @@ def avg_channels(data: np.array) -> np.array:
     return mono/chs
 
 def scale(data: np.array) -> np.array:
-    """ Turns a variance of [-1, 1], floating point
-    into [0, BITS), integer for mathematical reasons. 
+    """ Turns a range of [-1, 1], floating point
+    into [0, BITS), integer for mathematical reasons.
     See: https://en.wikipedia.org/wiki/%CE%9C-law_algorithm """
-    f = np.sign(data)*np.log(1 + MU*np.abs(data))/np.log(1 + MU) 
+    f = np.sign(data)*np.log(1 + MU*np.abs(data))/np.log(1 + MU)
     return ((MU >> 1)*(f + 1)).astype(int)
 
 def unscale(data: np.array) -> np.array:
     """ Reverses scale. """
-    data = data/(MU >> 1) - 1 
+    data = data/(MU >> 1) - 1
     return np.sign(data)*(1/MU)*(np.power(1 + MU, np.abs(data)) - 1)
 
 def compress(data: np.array) -> np.array:

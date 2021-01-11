@@ -1,6 +1,7 @@
 import time
 import numpy as np
-import audio, solver, db
+from amqlib import audio, solver
+import db
 
 def offset_time(t: int) -> float:
     """ Converts an array position to a time in seconds. """
@@ -19,17 +20,17 @@ def find_song(vol1: float, data: np.array, verbose: bool=False) -> str:
     """ Finds the name of the anime a clip occurs from. """
     start = time.time()
     songs = db.get_songs()
-    pos, best, ans = 0, float("inf"), ""
+    pos, best, ans, best_song = 0, float("inf"), "", ""
     for path, vol2, anime in sorted(songs):
         song = audio.load_file(path)
         p, l2 = test_against(vol1, data, vol2, song)
         if l2 < best:
-            pos, best, ans = p, l2, anime
+            pos, best, ans, best_song = p, l2, anime, db.get_name(path)
         if verbose:
             print(f"{db.get_name(path):<30}: {l2:<10} loss, occurs at {offset_time(p):<5} seconds in")
     if verbose:
         print("-"*10)
-        print(f"Final answer: {ans}")
+        print(f"Final answer: {ans}, song is {best_song} and clip occurs {offset_time(pos)} seconds in")
         sec = round(time.time() - start, 2)
         print(f"{len(songs)} songs in {sec} seconds = {round(len(songs)/sec, 2)} songs per second")
     return ans
