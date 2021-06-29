@@ -4,10 +4,10 @@ Note that for selenium to work, if the window is not headless, it must be focuse
 TODO: host game, automatically load unseen songs into the database
 """
 
-import time, json, sys
+import time, json, sys, os, getpass
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-import audio
+from amqlib import audio
 import main
 
 URL = "https://animemusicquiz.com/"  # url of the website
@@ -16,9 +16,14 @@ LEN = 10                             # seconds to record for
 VERBOSE = True                       # whether to be verbose or not
 HEADLESS, MUTED = True, False        # whether to run headless or muted
 
-with open(LOGIN) as f:
-    login = json.load(f)
-    USER, PASS = login["username"], login["password"]
+# load login information from file
+if os.path.exists(LOGIN):
+    with open(LOGIN) as f:
+        login = json.load(f)
+        USER, PASS = login["username"], login["password"]
+# prompt for information
+else:
+    USER, PASS = input("Username: "), getpass.getpass()
 
 def find_by_text(driver: webdriver.Chrome, text: str):
     """ Finds an element by text. """
