@@ -8,7 +8,7 @@ class MicrophoneRecognizer(BaseRecognizer):
     default_chunksize = 8192
     default_format = pyaudio.paInt16
     default_channels = 2
-    default_samplerate = 44100
+    default_samplerate = 48000
 
     def __init__(self, dejavu):
         super().__init__(dejavu)
@@ -39,6 +39,7 @@ class MicrophoneRecognizer(BaseRecognizer):
             rate=samplerate,
             input=True,
             frames_per_buffer=chunksize,
+            input_device_index=3
         )
 
         self.data = [[] for i in range(channels)]

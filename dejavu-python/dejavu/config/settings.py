@@ -58,7 +58,7 @@ CONNECTIVITY_MASK = 2
 
 # Sampling rate, related to the Nyquist conditions, which affects
 # the range frequencies we can detect.
-DEFAULT_FS = 44100
+DEFAULT_FS = 48000
 
 # Size of the FFT window, affects frequency granularity
 DEFAULT_WINDOW_SIZE = 4096
@@ -70,7 +70,7 @@ DEFAULT_OVERLAP_RATIO = 0.5
 
 # Degree to which a fingerprint can be paired with its neighbors. Higher values will
 # cause more fingerprints, but potentially better accuracy.
-DEFAULT_FAN_VALUE = 5  # 15 was the original value.
+DEFAULT_FAN_VALUE = 15  # 15 was the original value.
 
 # Minimum amplitude in spectrogram in order to be considered a peak.
 # This can be raised to reduce number of fingerprints, but can negatively
