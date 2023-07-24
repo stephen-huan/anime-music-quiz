@@ -3,6 +3,13 @@ import pyaudio
 
 from dejavu.base_classes.base_recognizer import BaseRecognizer
 
+DEVICE = "Soundflower (2ch)"
+INDEX = 2
+
+p = pyaudio.PyAudio()
+for i in range(p.get_host_api_info_by_index(0).get("deviceCount")):
+    if p.get_device_info_by_host_api_device_index(0, i).get("name") == DEVICE:
+        INDEX = i
 
 class MicrophoneRecognizer(BaseRecognizer):
     default_chunksize = 8192
@@ -39,7 +46,7 @@ class MicrophoneRecognizer(BaseRecognizer):
             rate=samplerate,
             input=True,
             frames_per_buffer=chunksize,
-            input_device_index=3
+            input_device_index=INDEX
         )
 
         self.data = [[] for i in range(channels)]
