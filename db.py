@@ -4,7 +4,6 @@ import glob
 import json
 import os
 import random
-import subprocess
 
 import numpy as np
 

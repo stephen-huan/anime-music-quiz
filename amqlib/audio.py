@@ -18,14 +18,13 @@ import json
 import os
 import subprocess
 import sys
-import time
 
 import numpy as np
 import sounddevice as sd
 from audio2numpy import open_audio
 from pydub import AudioSegment
 from pydub.utils import mediainfo
-from scipy.io.wavfile import read, write
+from scipy.io.wavfile import write
 
 IN = json.load(open("params.json"))["IN"]  # should be soundflower 2ch on macOS
 ORIG = int(48 * 1000)  # default 48 kHz sampling rate

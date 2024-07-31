@@ -7,7 +7,6 @@ TODO: host game, automatically load unseen songs into the database
 import getpass
 import json
 import os
-import sys
 import time
 
 from selenium import webdriver
