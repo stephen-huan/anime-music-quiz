@@ -24,8 +24,8 @@ HEADLESS, MUTED = True, False  # whether to run headless or muted
 # load login information from file
 if os.path.exists(LOGIN):
     with open(LOGIN) as f:
-        login = json.load(f)
-        USER, PASS = login["username"], login["password"]
+        login_info = json.load(f)
+        USER, PASS = login_info["username"], login_info["password"]
 # prompt for information
 else:
     USER, PASS = input("Username: "), getpass.getpass()

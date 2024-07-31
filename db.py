@@ -96,7 +96,7 @@ def make_samplerate() -> None:
             audio.samplerate(dest, path, audio.ORATE)
 
 
-def random_song(verbose: bool = True) -> np.array:
+def random_song(verbose: bool = True) -> np.ndarray:
     """Returns a random song from the database for testing purposes."""
     mn, mx = -10, 10
     dB = (mx - mn) * np.random.random_sample() + mn
@@ -106,10 +106,10 @@ def random_song(verbose: bool = True) -> np.array:
             f"Picking a clip from {get_name(song)} at {'+' if dB >= 0 else ''}{round(dB, 2)}dB"
         )
     return 1 / 3 * audio.set_samplerate(song)
-    return audio.set_volume(audio.set_samplerate(song), dB)
+    # return audio.set_volume(audio.set_samplerate(song), dB)
 
 
-def gen_test_case(length: int = 10, play: bool = False) -> np.array:
+def gen_test_case(length: int = 10, play: bool = False) -> np.ndarray:
     """Makes a test case by picking a random song and returning a clip from that song."""
     clip = audio.snippet(random_song(), length * audio.FS)
     audio.save_file("clip", clip)
@@ -161,14 +161,12 @@ if __name__ == "__main__":
     )
     clip.set_defaults(func=lambda args: gen_test_case(args.length, args.play))
     play = subparsers.add_parser("play", help="plays the test case")
-    play.set_defaults(
-        func=lambda args: audio.play(audio.load_file("clip.npy"))
-    )
+    play.set_defaults(func=lambda _: audio.play(audio.load_file("clip.npy")))
     size = subparsers.add_parser(
         "size", help="prints the size of the database"
     )
     size.set_defaults(
-        func=lambda args: print(f"{len(db)} songs in the database.")
+        func=lambda _: print(f"{len(db)} songs in the database.")
     )
 
     args = parser.parse_args()

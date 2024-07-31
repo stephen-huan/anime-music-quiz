@@ -9,7 +9,7 @@ suppose you have an array A of ints of size N
 and an array B of size M where M >= N
 
 find the offset i (0 <= i <= M - N)
-such that it minimizes \sum^{N - 1}_{j = 0} |A_j - B_{j + i}|
+such that it minimizes \\sum^{N - 1}_{j = 0} |A_j - B_{j + i}|
 (intuitively, the sum of pointwise differences between the waveform of the songs)
 ----------
 observation #1:
@@ -89,7 +89,7 @@ from amqlib import PATH
 
 from .fft import fft
 
-PATH = PATH[0]
+PATH = PATH[0]  # pyright: ignore
 
 
 def load_arrays(fname: str) -> tuple:
@@ -151,7 +151,7 @@ def max_cosine(a: list, b: list) -> tuple:
 def solve(a: list, b: list) -> tuple:
     """Same thing as min_offset, but with a cpp executable."""
     save_arrays(f"{PATH}/song.in", a, b)
-    subprocess.call(["./a.out"], cwd=PATH)
+    subprocess.call(["./a.out"], cwd=PATH)  # type: ignore
     with open(f"{PATH}/song.out") as f:
         return tuple(map(int, f.readline().split()))
 

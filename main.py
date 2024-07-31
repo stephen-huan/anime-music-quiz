@@ -12,18 +12,19 @@ def offset_time(t: int) -> float:
 
 
 def test_against(
-    vol1: float, data: np.array, vol2: float, song: np.array
+    vol1: float, data: np.ndarray, vol2: float, song: np.ndarray
 ) -> tuple:
     """Tests a clip against a song."""
+    (vol1, vol2)  # pyright: ignore
     # f = solver.loss_func(data, song)
     # for k in range(20):
     #     print(k/10, f(k/10))
     # print(solver.one_d_min(f, 0, 2), vol1, vol2)
     # return solver.solve((solver.one_d_min(f, 0, vol2/vol1)*data).astype(int), song)
-    return solver.solve(data, song)
+    return solver.solve(data, song)  # type: ignore
 
 
-def find_song(vol1: float, data: np.array, verbose: bool = False) -> str:
+def find_song(vol1: float, data: np.ndarray, verbose: bool = False) -> str:
     """Finds the name of the anime a clip occurs from."""
     start = time.time()
     songs = db.get_songs()

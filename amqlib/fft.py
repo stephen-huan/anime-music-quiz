@@ -78,6 +78,7 @@ def find_generator(n: int, k: int, p: int) -> int:
                 mod_exp(i, k * n // factor, p) != 1 for factor in prime_factors
             ):
                 return i
+    raise ValueError(f"{p} does not have a primitive root.")
 
 
 def find_wp(n: int) -> tuple:

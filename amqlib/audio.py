@@ -37,24 +37,24 @@ MU = (1 << 8) - 1  # number of bits per number (usually 16 for mp3)
 TEMP = "temp.mp3"  # temporary file path
 
 
-def save_file(fname: str, data: np.array):
+def save_file(fname: str, data: np.ndarray):
     """Saves a numpy array to a file."""
     np.save(fname, data)
 
 
-def load_file(fname: str) -> np.array:
+def load_file(fname: str) -> np.ndarray:
     """Loads a numpy array from a file."""
     return np.load(fname)
 
 
-def load_mp3(fname: str) -> np.array:
+def load_mp3(fname: str) -> np.ndarray:
     """Loads a mp3 file as a numpy array."""
     data, sampling_rate = open_audio(fname)
     assert sampling_rate == FS or sampling_rate == ORIG
     return data
 
 
-def save_mp3(fname: str, data: np.array, rate: int = FS) -> None:
+def save_mp3(fname: str, data: np.ndarray, rate: int = FS) -> None:
     """Saves data into the WAV format."""
     write(fname, rate, data)
 
@@ -71,7 +71,7 @@ def get_samplerate(fname: str) -> int:
     return int(mediainfo(fname)["sample_rate"])
 
 
-def set_samplerate(fname: str, rate: str = RATE) -> np.array:
+def set_samplerate(fname: str, rate: str = RATE) -> np.ndarray:
     """Converts an array recorded in one sample rate to one in another."""
     samplerate(fname, TEMP, rate)
     data = load_mp3(TEMP)
@@ -79,7 +79,7 @@ def set_samplerate(fname: str, rate: str = RATE) -> np.array:
     return data
 
 
-def set_volume(data: np.array, vol: int) -> np.array:
+def set_volume(data: np.ndarray, vol: int) -> np.ndarray:
     """Changes the volume of a song.
     TODO: make it not stupid."""
     save_mp3("temp.wav", data)
@@ -92,12 +92,12 @@ def set_volume(data: np.array, vol: int) -> np.array:
     return data
 
 
-def rge(data: np.array) -> float:
+def rge(data: np.ndarray) -> float:
     """Finds the range of the original data for volume scaling purposes."""
     return np.max(data) - np.min(data)
 
 
-def avg_channels(data: np.array) -> np.array:
+def avg_channels(data: np.ndarray) -> np.ndarray:
     """Averages all the channels together into one mono channel."""
     # already has only one channel
     if data.ndim == 1:
@@ -110,7 +110,7 @@ def avg_channels(data: np.array) -> np.array:
     return mono / chs
 
 
-def scale(data: np.array) -> np.array:
+def scale(data: np.ndarray) -> np.ndarray:
     """Turns a range of [-1, 1], floating point
     into [0, BITS), integer for mathematical reasons.
     See: https://en.wikipedia.org/wiki/%CE%9C-law_algorithm"""
@@ -118,13 +118,13 @@ def scale(data: np.array) -> np.array:
     return ((MU >> 1) * (f + 1)).astype(int)
 
 
-def unscale(data: np.array) -> np.array:
+def unscale(data: np.ndarray) -> np.ndarray:
     """Reverses scale."""
     data = data / (MU >> 1) - 1
     return np.sign(data) * (1 / MU) * (np.power(1 + MU, np.abs(data)) - 1)
 
 
-def compress(data: np.array) -> np.array:
+def compress(data: np.ndarray) -> np.ndarray:
     """Compresses the array down using a heuristical process.
     DEPRECIATED: use `ffmpeg -y -i song.mp3 -ar 8000 out.mp3`.
     """
@@ -134,41 +134,42 @@ def compress(data: np.array) -> np.array:
     return np.array(new_data)
 
 
-def uncompress(data: np.array) -> np.array:
+def uncompress(data: np.ndarray) -> np.ndarray:
     """Uncompresses the array by reversing compress.
     DEPRECIATED: just set the sample rate in play.
     """
     new_data = []
     for num in data:
-        for i in range(BUCKET):
+        for _ in range(BUCKET):
             new_data.append(num)
     return np.array(new_data)
 
 
-def preprocess(data: np.array) -> tuple:
+def preprocess(data: np.ndarray) -> tuple:
     """Prepares an array for audio analysis."""
     return rge(data), scale(compress(avg_channels(data)))
 
 
-def snippet(data: np.array, length: int = 10 * FS) -> np.array:
+def snippet(data: np.ndarray, length: int = 10 * FS) -> np.ndarray:
     """Returns a random snippet of the array for use in debugging."""
     i = np.random.randint(len(data) - length)
     return data[i : i + length]
 
 
-def play(data: np.array, rate: int = FS) -> None:
+def play(data: np.ndarray, rate: int = FS) -> None:
     """Plays a song to the default speaker."""
     sd.play(data, rate)
     sd.wait()
 
 
-def record(length: int, rate: int = FS) -> np.array:
+def record(length: int, rate: int = FS) -> np.ndarray:
     """Records a segment from the microphone (does not block)."""
     return sd.rec(int(length * rate), samplerate=rate, channels=1, device=IN)
 
 
-def rpi_record(length: int, rate: int = FS) -> np.array:
+def rpi_record(length: int, rate: int = FS) -> np.ndarray:
     """Records a segment from the microphone (blocks)."""
+    rate  # pyright: ignore
     subprocess.call(
         [
             "arecord",
