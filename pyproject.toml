@@ -1,0 +1,13 @@
+[tool.pyright]
+exclude = [".direnv"]
+root = "."
+
+[tool.ruff]
+line-length = 79
+
+[tool.black]
+line-length = 79
+
+[tool.isort]
+profile = "black"
+line_length = 79

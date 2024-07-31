@@ -1,3 +1,5 @@
+.direnv/
+result
 song*
 .python-version
 *.npy
