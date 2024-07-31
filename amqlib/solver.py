@@ -157,7 +157,7 @@ def solve(a: list, b: list) -> tuple:
             return tuple(map(int, f.readline().split()))
     else:
         # default to slow pure-python implementation
-        return max_cosine(list(a), list(b))
+        return min_offset(list(a), list(b))
 
 
 def loss_func(a, b):

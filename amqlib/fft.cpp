@@ -369,7 +369,7 @@ int main(void) {
     b.append(v);
   }
 
-  tie(pos, l2) = max_cosine(a, b);
+  tie(pos, l2) = min_offset(a, b);
   fout << pos << " " << l2 << el;
 
   return 0;
