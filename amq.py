@@ -10,6 +10,7 @@ import os
 import time
 
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 import main
@@ -33,7 +34,7 @@ else:
 
 def find_by_text(driver: webdriver.Chrome, text: str):
     """Finds an element by text."""
-    return driver.find_elements_by_xpath(f"//*[contains(text(), '{text}')]")
+    return driver.find_elements(By.XPATH, f"//*[contains(text(), '{text}')]")
 
 
 def login() -> webdriver.Chrome:
@@ -46,12 +47,12 @@ def login() -> webdriver.Chrome:
     driver = webdriver.Chrome(options=chrome_options)
 
     driver.get(URL)
-    driver.find_element_by_id("loginUsername").send_keys(USER)
-    driver.find_element_by_id("loginPassword").send_keys(PASS)
-    driver.find_element_by_id("loginButton").click()
+    driver.find_element(By.ID, "loginUsername").send_keys(USER)
+    driver.find_element(By.ID, "loginPassword").send_keys(PASS)
+    driver.find_element(By.ID, "loginButton").click()
     time.sleep(1)
 
-    btn = driver.find_elements_by_id("alreadyOnlineContinueButton")
+    btn = driver.find_elements(By.ID, "alreadyOnlineContinueButton")
     if len(btn) > 0:
         btn[0].click()
 
@@ -59,20 +60,20 @@ def login() -> webdriver.Chrome:
 
 
 def enter_game(
-    driver: webdriver.Chrome, room_name: str, room: int, password: str = None
+    driver: webdriver.Chrome, room_name: str, room: int, password: str = ""
 ) -> None:
     """Enters a game from the home page."""
-    driver.find_element_by_id("mpPlayButton").click()
+    driver.find_element(By.ID, "mpPlayButton").click()
 
-    driver.find_element_by_id("rbSearchInput").send_keys(room_name)
+    driver.find_element(By.ID, "rbSearchInput").send_keys(room_name)
     time.sleep(1)
-    top = driver.find_element_by_id(f"rbRoom-{room}")
-    top.find_element_by_class_name("rbrJoinButton").click()
+    top = driver.find_element(By.ID, f"rbRoom-{room}")
+    top.find_element(By.CLASS_NAME, "rbrJoinButton").click()
 
-    title = driver.find_elements_by_id("swal2-title")
+    title = driver.find_elements(By.ID, "swal2-title")
     if len(title) > 0:
-        driver.find_element_by_class_name("swal2-input").send_keys(password)
-        driver.find_element_by_class_name("swal2-confirm").click()
+        driver.find_element(By.CLASS_NAME, "swal2-input").send_keys(password)
+        driver.find_element(By.CLASS_NAME, "swal2-confirm").click()
 
     time.sleep(1)
     ready_up(driver)
@@ -82,7 +83,7 @@ def block_recording(driver: webdriver.Chrome) -> None:
     """Blocks until it's time to start recording."""
     while True:
         try:
-            t = driver.find_element_by_id("qpHiderText")
+            t = driver.find_element(By.ID, "qpHiderText")
             txt = t.text.strip()
             # if it's showing a high number, start recording
             if txt in set(str(i) for i in range(15, 21)):
@@ -99,7 +100,7 @@ def block_recording(driver: webdriver.Chrome) -> None:
 def ready_up(driver: webdriver.Chrome) -> None:
     """Clicks the ready button."""
     try:
-        btn = driver.find_element_by_id("lbStartButton")
+        btn = driver.find_element(By.ID, "lbStartButton")
         if btn.text.strip() == "Ready" or btn.text.strip() == "Start":
             btn.click()
     except KeyboardInterrupt:
@@ -112,8 +113,8 @@ def ready_up(driver: webdriver.Chrome) -> None:
 def vote_skip(driver: webdriver.Chrome) -> None:
     """Who has time to listen to the entire song?"""
     try:
-        btn = driver.find_element_by_id("qpVoteSkip")
-        if "toggled" not in btn.get_attribute("class").split():
+        btn = driver.find_element(By.ID, "qpVoteSkip")
+        if "toggled" not in btn.get_attribute("class").split():  # type: ignore
             btn.click()
     except KeyboardInterrupt:
         driver.quit()
@@ -124,7 +125,7 @@ def vote_skip(driver: webdriver.Chrome) -> None:
 
 def answer(driver: webdriver.Chrome, ans: str) -> None:
     """Gives an answer."""
-    box = driver.find_element_by_id("qpAnswerInput")
+    box = driver.find_element(By.ID, "qpAnswerInput")
     box.send_keys(ans)
     box.send_keys(Keys.RETURN)
 
