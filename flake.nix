@@ -56,11 +56,7 @@
           installPhase = "touch $out";
         };
 
-        devShells.${system}.default = (pkgs.mkShellNoCC.override {
-          stdenv = pkgs.stdenvNoCC.override {
-            initialPath = [ pkgs.coreutils ];
-          };
-        }) {
+        devShells.${system}.default = pkgs.mkShell {
           packages = [
             python'
           ]
