@@ -1,7 +1,7 @@
 # anime-music-quiz
 
-[[Video]](https://www.youtube.com/watch?v=7fUicc_lIGA)
-[[Lecture]](https://stephen-huan.github.io/assets/pdfs/cs-lectures/computer-vision/convolution/handout.pdf#page=48)
+[[Video]](https://youtu.be/7fUicc_lIGA)
+[[Lecture]](https://lectures.cgdct.moe/tjhsst/cv/convolution/handout.pdf#page=48)
 
 A bot which automatically plays [animemusicquiz](https://animemusicquiz.com/).
 Based on minimizing the l2 norm between the given clip and each
