@@ -92,7 +92,7 @@ def block_recording(driver: webdriver.Chrome) -> None:
         except KeyboardInterrupt:
             driver.quit()
             exit()
-        except:
+        except:  # noqa: E722
             pass
 
 
@@ -105,7 +105,7 @@ def ready_up(driver: webdriver.Chrome) -> None:
     except KeyboardInterrupt:
         driver.quit()
         exit()
-    except:
+    except:  # noqa: E722
         pass
 
 
@@ -118,7 +118,7 @@ def vote_skip(driver: webdriver.Chrome) -> None:
     except KeyboardInterrupt:
         driver.quit()
         exit()
-    except:
+    except:  # noqa: E722
         pass
 
 

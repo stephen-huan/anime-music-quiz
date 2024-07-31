@@ -128,21 +128,21 @@ def compress(data: np.array) -> np.array:
     """Compresses the array down using a heuristical process.
     DEPRECIATED: use `ffmpeg -y -i song.mp3 -ar 8000 out.mp3`.
     """
-    l = []
+    new_data = []
     for i in range(0, len(data), BUCKET):
-        l.append(np.sum(data[i : i + BUCKET]) / BUCKET)
-    return np.array(l)
+        new_data.append(np.sum(data[i : i + BUCKET]) / BUCKET)
+    return np.array(new_data)
 
 
 def uncompress(data: np.array) -> np.array:
     """Uncompresses the array by reversing compress.
     DEPRECIATED: just set the sample rate in play.
     """
-    l = []
+    new_data = []
     for num in data:
         for i in range(BUCKET):
-            l.append(num)
-    return np.array(l)
+            new_data.append(num)
+    return np.array(new_data)
 
 
 def preprocess(data: np.array) -> tuple:

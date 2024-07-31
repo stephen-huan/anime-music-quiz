@@ -163,4 +163,4 @@ N = 30
 # w, p = 4782969, 31525197391593473
 w, p = 125, 3221225473
 
-fft = lambda a, b: poly_mult(a, b, w, p)
+fft = lambda a, b: poly_mult(a, b, w, p)  # noqa: E731
