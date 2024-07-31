@@ -82,79 +82,97 @@ https://ljk.imag.fr/membres/Anatoli.Iouditski/cours/convex/chapitre_22.pdf
 where V is the maximum value of f and epsilon is the wanted precision
 V ~= 2^16, epsilon = 1
 """
+
 import subprocess
+
 from amqlib import PATH
+
 from .fft import fft
 
 PATH = PATH[0]
 
+
 def load_arrays(fname: str) -> tuple:
-    """ Gets arrays from a file. """
+    """Gets arrays from a file."""
     with open(fname) as f:
         f.readline()
         l1 = list(map(int, f.readline().split()))
         f.readline()
         return l1, list(map(int, f.readline().split()))
 
+
 def save_arrays(fname: str, l1: list, l2: list) -> None:
-    """ Dumps arrays to a file. """
+    """Dumps arrays to a file."""
     with open(fname, "w") as f:
         f.write(str(len(l1)) + "\n")
         f.write(" ".join(map(str, l1)) + "\n")
         f.write(str(len(l2)) + "\n")
         f.write(" ".join(map(str, l2)) + "\n")
 
+
 def min_offset(a: list, b: list) -> tuple:
-    """ Computes the offset that minimizes the l2 norm. """
+    """Computes the offset that minimizes the l2 norm."""
     N, M = len(a), len(b)
-    p = fft(a[::-1], b)[N - 1:]
-    x2, xy, y2 = sum(x*x for x in a), p[0], sum(b[i]*b[i] for i in range(N))
-    best, l2 = 0, -2*xy + y2
+    p = fft(a[::-1], b)[N - 1 :]
+    x2, xy, y2 = (
+        sum(x * x for x in a),
+        p[0],
+        sum(b[i] * b[i] for i in range(N)),
+    )
+    best, l2 = 0, -2 * xy + y2
     for i in range(1, M - N + 1):
-        y2 += b[N - 1 + i]*b[N - 1 + i] - b[i - 1]*b[i - 1]
+        y2 += b[N - 1 + i] * b[N - 1 + i] - b[i - 1] * b[i - 1]
         xy = p[i]
-        d = -2*xy + y2
+        d = -2 * xy + y2
         if d < l2:
             best, l2 = i, d
     return best, x2 + l2
 
+
 def max_cosine(a: list, b: list) -> tuple:
-    """ Computes the offset that maximizes the cosine similarity. """
+    """Computes the offset that maximizes the cosine similarity."""
     N, M = len(a), len(b)
-    p = fft(a[::-1], b)[N - 1:]
-    x2, xy, y2 = sum(x*x for x in a), p[0], sum(b[i]*b[i] for i in range(N))
-    best, cos = 0, xy/y2
+    p = fft(a[::-1], b)[N - 1 :]
+    x2, xy, y2 = (
+        sum(x * x for x in a),
+        p[0],
+        sum(b[i] * b[i] for i in range(N)),
+    )
+    best, cos = 0, xy / y2
     for i in range(1, M - N + 1):
-        y2 += b[N - 1 + i]*b[N - 1 + i] - b[i - 1]*b[i - 1]
+        y2 += b[N - 1 + i] * b[N - 1 + i] - b[i - 1] * b[i - 1]
         xy = p[i]
-        d = xy/y2
+        d = xy / y2
         if d > cos:
             best, cos = i, d
-    return best, 1 - cos/x2 # loss means lower is better
+    return best, 1 - cos / x2  # loss means lower is better
+
 
 def solve(a: list, b: list) -> tuple:
-    """ Same thing as min_offset, but with a cpp executable. """
+    """Same thing as min_offset, but with a cpp executable."""
     save_arrays(f"{PATH}/song.in", a, b)
     subprocess.call(["./a.out"], cwd=PATH)
     with open(f"{PATH}/song.out") as f:
         return tuple(map(int, f.readline().split()))
 
+
 def loss_func(a, b):
-    return lambda v: solve((v*a).astype(int), b)[-1]
+    return lambda v: solve((v * a).astype(int), b)[-1]
+
 
 def one_d_min(f, a, d, epsilon=10**-2):
     while abs(a - d) > epsilon:
-        t = (d - a)/3
+        t = (d - a) / 3
         b = a + t
-        c = a + 2*t
+        c = a + 2 * t
         if f(b) < f(c):
             a, d = a, c
         else:
             a, d = b, d
-    return (a + d)/2
+    return (a + d) / 2
+
 
 if __name__ == "__main__":
     a, b = load_arrays("song.in")
     # print(min_offset(a, b))
     print(solve(a, b))
-

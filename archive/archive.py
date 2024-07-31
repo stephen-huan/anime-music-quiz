@@ -1,25 +1,32 @@
 def fft(a: list, b: list) -> list:
-    """ Multiplies two polynomials given by
-    (a[0] + a[1]x + a[2]x^2 + ...)(b[0] + b[1]x + b[2]x^2 + ...). """
+    """Multiplies two polynomials given by
+    (a[0] + a[1]x + a[2]x^2 + ...)(b[0] + b[1]x + b[2]x^2 + ...)."""
     # TODO: replace with fft
-    p = [0]*(len(a) + len(b) - 1)
+    p = [0] * (len(a) + len(b) - 1)
     for i in range(len(a)):
         for j in range(len(b)):
-            p[i + j] += a[i]*b[j]
+            p[i + j] += a[i] * b[j]
     return p
+
 
 def brute_force(a: list, b: list) -> int:
     # for i in range(len(b) - len(a) + 1):
     #     print(sum((a[j] - b[j + i])**2 for j in range(len(a))), sum(abs(a[j] - b[j + i]) for j in range(len(a))))
-    return min(range(len(b) - len(a) + 1), key=lambda i: sum((a[j] - b[j + i])**2 for j in range(len(a))))
+    return min(
+        range(len(b) - len(a) + 1),
+        key=lambda i: sum((a[j] - b[j + i]) ** 2 for j in range(len(a))),
+    )
+
+
+import wave
 
 ### AUDIO
 ##### PYAUDIO
 import pyaudio
-import wave
 
 IN = 2
 OUT = None
+
 
 def play_audio(fname: str):
     # Set chunk size of 1024 samples per data frame
@@ -33,10 +40,12 @@ def play_audio(fname: str):
 
     # Open a .Stream object to write the WAV file to
     # 'output = True' indicates that the sound will be played rather than recorded
-    stream = p.open(format=p.get_format_from_width(f.getsampwidth()),
-                    channels=f.getnchannels(),
-                    rate=f.getframerate(),
-                    output=True)
+    stream = p.open(
+        format=p.get_format_from_width(f.getsampwidth()),
+        channels=f.getnchannels(),
+        rate=f.getframerate(),
+        output=True,
+    )
 
     # Read data in chunks
     data = wf.readframes(chunk)
@@ -50,6 +59,7 @@ def play_audio(fname: str):
     stream.close()
     p.terminate()
 
+
 def record_audio():
     chunk = 1024  # Record in chunks of 1024 samples
     sample_format = pyaudio.paInt32  # 16 bits per sample
@@ -60,14 +70,16 @@ def record_audio():
 
     p = pyaudio.PyAudio()  # Create an interface to PortAudio
 
-    print('Recording')
+    print("Recording")
 
-    stream = p.open(format=sample_format,
-                    channels=channels,
-                    rate=fs,
-                    frames_per_buffer=chunk,
-                    input_device_index=IN,
-                    input=True)
+    stream = p.open(
+        format=sample_format,
+        channels=channels,
+        rate=fs,
+        frames_per_buffer=chunk,
+        input_device_index=IN,
+        input=True,
+    )
 
     frames = []  # Initialize array to store frames
 
@@ -82,21 +94,23 @@ def record_audio():
     # Terminate the PortAudio interface
     p.terminate()
 
-    print('Finished recording')
+    print("Finished recording")
 
     # Save the recorded data as a WAV file
-    wf = wave.open(filename, 'wb')
+    wf = wave.open(filename, "wb")
     wf.setnchannels(channels)
     wf.setsampwidth(p.get_sample_size(sample_format))
     wf.setframerate(fs)
-    wf.writeframes(b''.join(frames))
+    wf.writeframes(b"".join(frames))
     wf.close()
+
 
 record_audio()
 
 ##### PLAYSOUND
 
 from playsound import playsound
+
 SONG = "songs/bakemonogatari_ed1.mp3"
 playsound(SONG)
 
@@ -104,7 +118,7 @@ playsound(SONG)
 import numpy as np
 import soundcard as sc
 
-FS = int(44.1*1000) # 48 kHz sampling rate
+FS = int(44.1 * 1000)  # 48 kHz sampling rate
 
 print(sc.all_microphones())
 mic = sc.default_microphone()
@@ -130,7 +144,7 @@ OUT = 5
 
 print(sd.query_devices())
 print("recording")
-data = sd.rec(int(5*FS), samplerate=FS, channels=1, device=IN)
+data = sd.rec(int(5 * FS), samplerate=FS, channels=1, device=IN)
 sd.wait()
 print("playing back")
 print(data)

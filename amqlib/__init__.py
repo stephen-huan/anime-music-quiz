@@ -1,1 +1,1 @@
-PATH = __path__ # directory containing the module
+PATH = __path__  # directory containing the module
