@@ -76,6 +76,20 @@ will join the room and once the game starts, will begin play.
 It will then warn you if the audio it receives is suspiciously quiet ---
 check that the system output is going to the loopback device properly.
 
+#### Optional compiled algorithm
+
+By default, the recognition algorithm uses a pure Python implementation
+which is very slow. The C++ implementation of the algorithm can
+optionally be used to improve performance. Compile `amqlib/fft.cpp` with
+
+```shell
+cd amqlib
+clang++ -O3 fft.cpp -o a.out
+```
+
+or `g++ -O3 fft.cpp -o a.out` with gcc. Note
+that the executable must be at `amqlib/a.out`.
+
 ### Database
 
 Songs (mp3 files) are stored in the `songs` folder.
