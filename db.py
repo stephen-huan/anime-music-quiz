@@ -1,35 +1,30 @@
 # maintains the song database
 import argparse
-import glob
 import json
 import os
 import random
+from pathlib import Path
 
 import numpy as np
 
 from amqlib import audio
 
-PATH = "songs"  # where the songs are stored
-DB = PATH + "/sampled_down"  # cached reduced songs
-EXT = ".mp3"  # extension for each song
-INFO = PATH + "/info.json"  # file storing metadata
-EXT2 = ".npy"  # alternative extension
-ORIG = PATH + "/original"  # untampered with song files
+PATH = Path("songs")  # where the songs are stored
+DB = PATH / "sampled_down"  # cached reduced songs
+INFO = PATH / "info.json"  # file storing metadata
+ORIG = PATH / "original"  # untampered with song files
+EXT = "mp3"  # extension for each song
+EXT2 = "npy"  # alternative extension
 
 
 def get_paths() -> list:
     """Returns the paths to each song."""
-    return [path for path in glob.glob(f"{PATH}/*{EXT}")]
+    return [path for path in PATH.rglob(f"*.{EXT}")]
 
 
 def get_cached_paths() -> list:
     """Returns the list of songs that have already been preprocessed."""
-    return [path for path in glob.glob(f"{DB}/*{EXT2}")]
-
-
-def get_name(path: str) -> str:
-    """Returns the name from a path."""
-    return path.split("/")[-1].split(".")[0]
+    return [path for path in DB.rglob(f"*.{EXT2}")]
 
 
 def load_db() -> dict:
@@ -49,14 +44,14 @@ def save_db(data: dict) -> None:
 def gen_cache(force: bool = False) -> None:
     """Applies the preprocessing defined in audio to each song."""
     db = load_db()
-    cached = [get_name(path) for path in get_cached_paths()]
+    cached = [path.stem for path in get_cached_paths()]
 
     for path in get_paths():
-        name = get_name(path)
+        name = path.stem
         if name not in cached or force:
             song = audio.set_samplerate(path)
             vol, song = audio.preprocess(song)
-            audio.save_file(f"{DB}/{name}", song)
+            audio.save_file(DB / name, song)
 
             if name not in db:
                 db[name] = {"vol": None, "anime": None}
@@ -89,10 +84,9 @@ def make_samplerate() -> None:
     for path in get_paths():
         sample_rate = audio.get_samplerate(path)
         if sample_rate != audio.ORIG:
-            if not os.path.exists(ORIG):
-                os.mkdir(ORIG)
-            dest = f"{ORIG}/{get_name(path)}{EXT}"
-            os.rename(path, dest)
+            ORIG.mkdir(parents=True, exist_ok=True)
+            dest = ORIG / path.stem / f".{EXT}"
+            path.rename(dest)
             audio.samplerate(dest, path, audio.ORATE)
 
 
@@ -118,12 +112,12 @@ def gen_test_case(length: int = 10, play: bool = False) -> np.ndarray:
     return clip
 
 
-def get_songs() -> list:
-    """Returns a list of (song path, volume, anime name) tuples from the database."""
+def get_songs() -> list[tuple[Path, float, str]]:
+    """Returns a list of (song path, volume, anime name) from the database."""
     db = load_db()
     songs = []
     for path in get_cached_paths():
-        name = get_name(path)
+        name = path.stem
         songs.append((path, db[name]["vol"], db[name]["anime"]))
     return songs
 
@@ -134,6 +128,7 @@ if (
     or len(db) < len(get_paths())
     or any(info["anime"] is None for info in db.values())
 ):
+    DB.mkdir(parents=True, exist_ok=True)
     update_db()
 
 if __name__ == "__main__":

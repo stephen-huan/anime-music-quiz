@@ -84,12 +84,12 @@ V ~= 2^16, epsilon = 1
 """
 
 import subprocess
-
-from amqlib import PATH
+from pathlib import Path
 
 from .fft import fft
 
-PATH = PATH[0]  # pyright: ignore
+PATH = Path(__file__).parent
+EXECUTABLE = PATH / "a.out"
 
 
 def load_arrays(fname: str) -> tuple:
@@ -101,9 +101,9 @@ def load_arrays(fname: str) -> tuple:
         return l1, list(map(int, f.readline().split()))
 
 
-def save_arrays(fname: str, l1: list, l2: list) -> None:
+def save_arrays(out: Path, l1: list, l2: list) -> None:
     """Dumps arrays to a file."""
-    with open(fname, "w") as f:
+    with out.open("w") as f:
         f.write(str(len(l1)) + "\n")
         f.write(" ".join(map(str, l1)) + "\n")
         f.write(str(len(l2)) + "\n")
@@ -150,10 +150,14 @@ def max_cosine(a: list, b: list) -> tuple:
 
 def solve(a: list, b: list) -> tuple:
     """Same thing as min_offset, but with a cpp executable."""
-    save_arrays(f"{PATH}/song.in", a, b)
-    subprocess.call(["./a.out"], cwd=PATH)  # type: ignore
-    with open(f"{PATH}/song.out") as f:
-        return tuple(map(int, f.readline().split()))
+    if EXECUTABLE.is_file():
+        save_arrays(PATH / "song.in", a, b)
+        subprocess.call(["./a.out"], cwd=PATH)  # type: ignore
+        with open(PATH / "song.out") as f:
+            return tuple(map(int, f.readline().split()))
+    else:
+        # default to slow pure-python implementation
+        return max_cosine(list(a), list(b))
 
 
 def loss_func(a, b):

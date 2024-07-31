@@ -33,10 +33,10 @@ def find_song(vol1: float, data: np.ndarray, verbose: bool = False) -> str:
         song = audio.load_file(path)
         p, l2 = test_against(vol1, data, vol2, song)
         if l2 < best:
-            pos, best, ans, best_song = p, l2, anime, db.get_name(path)
+            pos, best, ans, best_song = p, l2, anime, path.stem
         if verbose:
             print(
-                f"{db.get_name(path):<30}: {l2:<10} loss, occurs at {offset_time(p):<5} seconds in"
+                f"{path.stem:<30}: {l2:<10} loss, occurs at {offset_time(p):<5} seconds in"
             )
     if verbose:
         print("-" * 10)
@@ -57,17 +57,15 @@ if __name__ == "__main__":
     anime = find_song(vol1, clip, True)
     # print(anime)
 
-    # exit()
-
-    raw_clip, raw_song = audio.load_file("clip.npy"), audio.load_file(
-        "songs/sampled_down/bakemonogatari_ed1.npy"
-    )
-    vol1, clip = audio.preprocess(raw_clip)
-    vol2, song = vol1, raw_song
-    # vol2, song = audio.preprocess(raw_song)
-    pos, l2 = test_against(vol1, clip, vol2, song)
-
-    print(f"Clip occurs about {offset_time(pos)} seconds into the song")
+    # raw_clip, raw_song = audio.load_file("clip.npy"), audio.load_file(
+    #     "songs/sampled_down/bakemonogatari_ed1.npy"
+    # )
+    # vol1, clip = audio.preprocess(raw_clip)
+    # vol2, song = vol1, raw_song
+    # # vol2, song = audio.preprocess(raw_song)
+    # pos, l2 = test_against(vol1, clip, vol2, song)
+    #
+    # print(f"Clip occurs about {audio.offset_time(pos)} seconds into the song")
     # print("Playing clip:")
     # audio.play(raw_clip)
     # print("Playing from the estimated position in the original song:")

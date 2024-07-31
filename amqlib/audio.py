@@ -18,6 +18,7 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 import numpy as np
 import sounddevice as sd
@@ -26,7 +27,9 @@ from pydub import AudioSegment
 from pydub.utils import mediainfo
 from scipy.io.wavfile import write
 
-IN = json.load(open("params.json"))["IN"]  # should be soundflower 2ch on macOS
+CONFIG = Path("params.json")
+with CONFIG.open() as f:
+    IN = json.load(f)["IN"]  # should be soundflower 2ch on macOS
 ORIG = int(48 * 1000)  # default 48 kHz sampling rate
 ORATE = "48k"  # original rate, passed to ffmpeg
 FS = int(8 * 1000)  # post-processed after ffmpeg down scaling
@@ -34,44 +37,46 @@ RATE = "8k"  # new rate, passed to ffmpeg
 BUCKET = 1 << 5  # must be a divisor of FS, factor of size reduction
 # assert FS % BUCKET == 0
 MU = (1 << 8) - 1  # number of bits per number (usually 16 for mp3)
-TEMP = "temp.mp3"  # temporary file path
+TEMP = Path("temp.mp3")  # temporary file path
 
 
-def save_file(fname: str, data: np.ndarray):
+def save_file(fname: Path | str, data: np.ndarray):
     """Saves a numpy array to a file."""
     np.save(fname, data)
 
 
-def load_file(fname: str) -> np.ndarray:
+def load_file(fname: Path | str) -> np.ndarray:
     """Loads a numpy array from a file."""
     return np.load(fname)
 
 
-def load_mp3(fname: str) -> np.ndarray:
+def load_mp3(fname: Path | str) -> np.ndarray:
     """Loads a mp3 file as a numpy array."""
-    data, sampling_rate = open_audio(fname)
+    data, sampling_rate = open_audio(str(fname))
     assert sampling_rate == FS or sampling_rate == ORIG
     return data
 
 
-def save_mp3(fname: str, data: np.ndarray, rate: int = FS) -> None:
+def save_mp3(fname: Path | str, data: np.ndarray, rate: int = FS) -> None:
     """Saves data into the WAV format."""
     write(fname, rate, data)
 
 
-def samplerate(fname: str, out: str = TEMP, rate: str = RATE) -> None:
+def samplerate(
+    fname: Path | str, out: Path | str = TEMP, rate: str = RATE
+) -> None:
     """Uses ffmpeg to set the sample rate of a file."""
     subprocess.call(
         ["ffmpeg", "-loglevel", "quiet", "-y", "-i", fname, "-ar", rate, out]
     )
 
 
-def get_samplerate(fname: str) -> int:
+def get_samplerate(fname: Path | str) -> int:
     """Returns the sample rate of a file."""
     return int(mediainfo(fname)["sample_rate"])
 
 
-def set_samplerate(fname: str, rate: str = RATE) -> np.ndarray:
+def set_samplerate(fname: Path | str, rate: str = RATE) -> np.ndarray:
     """Converts an array recorded in one sample rate to one in another."""
     samplerate(fname, TEMP, rate)
     data = load_mp3(TEMP)
