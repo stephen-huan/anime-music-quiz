@@ -6,11 +6,6 @@ import db
 from amqlib import audio, solver
 
 
-def offset_time(t: int) -> float:
-    """Converts an array position to a time in seconds."""
-    return round(audio.BUCKET * t / audio.FS, 1)
-
-
 def test_against(
     vol1: float, data: np.ndarray, vol2: float, song: np.ndarray
 ) -> tuple:
@@ -18,9 +13,11 @@ def test_against(
     (vol1, vol2)  # pyright: ignore
     # f = solver.loss_func(data, song)
     # for k in range(20):
-    #     print(k/10, f(k/10))
+    #     print(k / 10, f(k / 10))
     # print(solver.one_d_min(f, 0, 2), vol1, vol2)
-    # return solver.solve((solver.one_d_min(f, 0, vol2/vol1)*data).astype(int), song)
+    # return solver.solve(
+    #     (solver.one_d_min(f, 0, vol2 / vol1) * data).astype(int), song
+    # )
     return solver.solve(data, song)  # type: ignore
 
 
@@ -36,16 +33,19 @@ def find_song(vol1: float, data: np.ndarray, verbose: bool = False) -> str:
             pos, best, ans, best_song = p, l2, anime, path.stem
         if verbose:
             print(
-                f"{path.stem:<30}: {l2:<10} loss, occurs at {offset_time(p):<5} seconds in"
+                f"{path.stem:<30}: {l2:<10} loss,"
+                + f" occurs at {audio.offset_time(p):<5} seconds in"
             )
     if verbose:
         print("-" * 10)
         print(
-            f"Final answer: {ans}, song is {best_song} and clip occurs {offset_time(pos)} seconds in"
+            f"Final answer: {ans}, song is {best_song}"
+            + f" and clip occurs {audio.offset_time(pos)} seconds in"
         )
         sec = round(time.time() - start, 2)
         print(
-            f"{len(songs)} songs in {sec} seconds = {round(len(songs)/sec, 2)} songs per second"
+            f"{len(songs)} songs in {sec} seconds"
+            + f" = {round(len(songs)/sec, 2)} songs per second"
         )
     return ans
 

@@ -84,9 +84,9 @@ def set_samplerate(fname: Path | str, rate: str = RATE) -> np.ndarray:
     return data
 
 
-def set_volume(data: np.ndarray, vol: int) -> np.ndarray:
-    """Changes the volume of a song.
-    TODO: make it not stupid."""
+def set_volume(data: np.ndarray, vol: float) -> np.ndarray:
+    """Changes the volume of a song."""
+    # TODO: make it not stupid
     save_mp3("temp.wav", data)
     song = AudioSegment.from_wav("temp.wav")
     os.remove("temp.wav")
@@ -155,10 +155,15 @@ def preprocess(data: np.ndarray) -> tuple:
     return rge(data), scale(compress(avg_channels(data)))
 
 
-def snippet(data: np.ndarray, length: int = 10 * FS) -> np.ndarray:
+def snippet(data: np.ndarray, length: int = 10 * FS) -> tuple[np.ndarray, int]:
     """Returns a random snippet of the array for use in debugging."""
     i = np.random.randint(len(data) - length)
-    return data[i : i + length]
+    return data[i : i + length], i
+
+
+def offset_time(t: int, compressed: bool = True) -> float:
+    """Converts an array position to a time in seconds."""
+    return round((BUCKET if compressed else 1) * t / FS, 1)
 
 
 def play(data: np.ndarray, rate: int = FS) -> None:
